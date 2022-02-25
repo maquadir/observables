@@ -79,4 +79,20 @@ fun main(args: Array<String>) {
         subscriptions.dispose()
     }
 
+    exampleOf("create"){
+        val disposables = CompositeDisposable()
+
+        Observable.create<String> { emitter ->
+            emitter.onNext("1")
+            emitter.onNext("?")
+            emitter.onError(RuntimeException("Error"))
+            emitter.onComplete()
+        }.subscribeBy(
+            onNext = { println(it)},
+            onComplete = { println("complete")},
+            onError = { println("Error")}
+        )
+
+    }
+
 }
