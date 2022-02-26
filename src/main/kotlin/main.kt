@@ -82,7 +82,7 @@ fun main(args: Array<String>) {
     exampleOf("create"){
         val disposables = CompositeDisposable()
 
-        Observable.create<String> { emitter ->
+        val observable = Observable.create<String> { emitter ->
             emitter.onNext("1")
             emitter.onNext("?")
             emitter.onError(RuntimeException("Error"))
@@ -92,7 +92,32 @@ fun main(args: Array<String>) {
             onComplete = { println("complete")},
             onError = { println("Error")}
         )
+        disposables.add(observable)
+        disposables.dispose()
+    }
 
+    exampleOf("factory"){
+
+        val disposables = CompositeDisposable()
+
+        var flip = false
+        val factory = Observable.defer {
+            flip = !flip
+            if(flip){
+                Observable.just(1,2,3)
+            }else{
+                Observable.just(4,5,6)
+            }
+        }
+
+        for(i in 0..3){
+            disposables.add(
+                factory.subscribe {
+                    println(it)
+                }
+            )
+        }
+        disposables.dispose()
     }
 
 }
