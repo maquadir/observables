@@ -50,30 +50,42 @@ fun main(args: Array<String>) {
     }
 
     exampleOf("never") {
-        Observable.never<Any>().subscribeBy(
-            onNext = { println(it) },
-            onComplete = { println("complete") }
-        )
+
+        val disposables = CompositeDisposable()
+
+        val observable = Observable.never<Any>()
+            .doOnNext { println(it) }
+            .doOnComplete { println("Completed") }
+            .doOnSubscribe { println("Subscribed") }
+            .doOnDispose { println("Disposed") }
+            .subscribeBy(onNext = {
+                println(it)
+            }, onComplete = {
+                println("Completed")
+            })
+
+        disposables.add(observable)
+        disposables.dispose()
     }
 
     exampleOf("range") {
         Observable.range(1, 10).subscribeBy(
-            onNext = { println(it)},
-            onComplete = { println("completed")},
-            onError = { println("error")}
+            onNext = { println(it) },
+            onComplete = { println("completed") },
+            onError = { println("error") }
         )
     }
 
-    exampleOf("dispose"){
-        val observable = Observable.just(1,2,3)
+    exampleOf("dispose") {
+        val observable = Observable.just(1, 2, 3)
         val subscription = observable.subscribe { println(it) }
         subscription.dispose()
     }
 
-    exampleOf("compositeDisposable"){
+    exampleOf("compositeDisposable") {
         val subscriptions = CompositeDisposable()
 
-        val disposable = Observable.just("A", "B", "C").subscribe{
+        val disposable = Observable.just("A", "B", "C").subscribe {
             println(it)
         }
 
@@ -81,7 +93,7 @@ fun main(args: Array<String>) {
         subscriptions.dispose()
     }
 
-    exampleOf("create"){
+    exampleOf("create") {
         val disposables = CompositeDisposable()
 
         val observable = Observable.create<String> { emitter ->
@@ -90,29 +102,29 @@ fun main(args: Array<String>) {
             emitter.onError(RuntimeException("Error"))
             emitter.onComplete()
         }.subscribeBy(
-            onNext = { println(it)},
-            onComplete = { println("complete")},
-            onError = { println("Error")}
+            onNext = { println(it) },
+            onComplete = { println("complete") },
+            onError = { println("Error") }
         )
         disposables.add(observable)
         disposables.dispose()
     }
 
-    exampleOf("factory"){
+    exampleOf("factory") {
 
         val disposables = CompositeDisposable()
 
         var flip = false
         val factory = Observable.defer {
             flip = !flip
-            if(flip){
-                Observable.just(1,2,3)
-            }else{
-                Observable.just(4,5,6)
+            if (flip) {
+                Observable.just(1, 2, 3)
+            } else {
+                Observable.just(4, 5, 6)
             }
         }
 
-        for(i in 0..3){
+        for (i in 0..3) {
             disposables.add(
                 factory.subscribe {
                     println(it)
@@ -122,13 +134,13 @@ fun main(args: Array<String>) {
         disposables.dispose()
     }
 
-    exampleOf("Single"){
+    exampleOf("Single") {
         val subscriptions = CompositeDisposable()
 
-        fun loadText(filename: String) : Single<String> {
-            return Single.create create@{emitter ->
+        fun loadText(filename: String): Single<String> {
+            return Single.create create@{ emitter ->
                 val file = File(filename)
-                if(!file.exists()){
+                if (!file.exists()) {
                     emitter.onError(FileNotFoundException("Can’t find $filename"))
                     return@create
                 }
@@ -136,9 +148,10 @@ fun main(args: Array<String>) {
                 emitter.onSuccess(contents)
             }
         }
+
         val observer = loadText("Copyright.txt").subscribeBy(
-            onSuccess = { println(it)},
-            onError = { println("Error , $it")}
+            onSuccess = { println(it) },
+            onError = { println("Error , $it") }
         )
         subscriptions.add(observer)
     }
