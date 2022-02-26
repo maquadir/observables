@@ -1,2 +1,2 @@
 # observables
-kotlin sample project to test observables
+Rx kotlin using observables
